@@ -1,9 +1,10 @@
 import json
+import random
 import ssl
 import paho.mqtt.client as mqtt
 from pymongo import MongoClient
 from datetime import datetime
-
+    
 # MQTT Config
 ENDPOINT = "d002332310q6wvd4iri8x-ats.iot.ap-south-1.amazonaws.com"
 PORT     = 8883
@@ -26,7 +27,7 @@ collection = db[COLLECTION_NAME]
 def on_connect(client, userdata, flags, rc):
     print(f"[Receiver] Connected with result code {rc}")
     client.subscribe(TOPIC)
-    
+
 
 def on_message(client, userdata, msg):
     try:
