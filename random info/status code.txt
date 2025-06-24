@@ -1,0 +1,11 @@
+
+| Code  | Meaning               | Used When                                           |
+| ----- | --------------------- | --------------------------------------------------- |
+| `200` | OK                    | For successful GET/PUT requests                     |
+| `201` | Created               | When a new resource is created (`POST`)             |
+| `204` | No Content            | When the request succeeded, but no data is returned |
+| `400` | Bad Request           | Client sent invalid input                           |
+| `401` | Unauthorized          | Auth required                                       |
+| `404` | Not Found             | Resource not found                                  |
+| `409` | Conflict              | Duplicate data (like same email)                    |
+| `500` | Internal Server Error | Something broke on the server                       |
