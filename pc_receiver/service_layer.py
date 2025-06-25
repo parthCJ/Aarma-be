@@ -7,7 +7,7 @@ import time
 app = FastAPI()
 
 # Your API endpoint for sensor data
-API_URL = "http://localhost:8000/sensor-data"
+API_URL = "d002332310q6wvd4iri8x-ats.iot.ap-south-1.amazonaws.com"
 
 # Example hardcoded IDs (replace with dynamic if needed)
 DEVICE_ID = "DEV001"
