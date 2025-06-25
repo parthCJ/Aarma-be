@@ -6,9 +6,9 @@ import requests
 import random
 
 # === MQTT CONFIG ===
-ENDPOINT = "your-endpoint.iot.<region>.amazonaws.com"  # <-- Replace with your real AWS IoT endpoint
+ENDPOINT = "d002332310q6wvd4iri8x-ats.iot.ap-south-1.amazonaws.com" # <-- Replace with your real AWS IoT endpoint
 PORT = 8883
-TOPIC = "iot/adc_data"
+TOPIC = "iot/adc_data" 
 
 # === Certificate Paths (your actual files) ===
 CA_PATH   = "../certs/AmazonRootCA1.pem"
