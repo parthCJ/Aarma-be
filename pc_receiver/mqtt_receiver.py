@@ -3,6 +3,7 @@ import ssl
 import os
 import paho.mqtt.client as mqtt
 import requests
+import random
 
 # === MQTT CONFIG ===
 ENDPOINT = "your-endpoint.iot.<region>.amazonaws.com"  # <-- Replace with your real AWS IoT endpoint
