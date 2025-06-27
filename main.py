@@ -1,3 +1,4 @@
+
 import subprocess
 import time
 
@@ -18,3 +19,6 @@ except KeyboardInterrupt:
     print("\n[!] Stopping processes...")
     api_process.terminate()
     mqtt_process.terminate()
+=======
+import random
+
