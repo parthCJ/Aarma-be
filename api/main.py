@@ -12,9 +12,9 @@ app = FastAPI(
 )
 
 # Fixed route prefix to match service_layer.py (which sends to /api/sensor-data)
-app.include_router(user_router, prefix="/api", tags=["Users"])
-app.include_router(location_router, prefix="/api", tags=["Locations"])
-app.include_router(device_router, prefix="/api", tags=["Devices"])
+app.include_router(user_router, prefix="/users", tags=["Users"])
+app.include_router(location_router, prefix="/location", tags=["Locations"])
+app.include_router(device_router, prefix="/devices", tags=["Devices"])
 app.include_router(sensor_router, prefix="/sensors", tags=["Sensors"])
 
 

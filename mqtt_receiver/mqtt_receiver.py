@@ -9,6 +9,7 @@ from pymongo import MongoClient
 from datetime import datetime
 from copy import deepcopy
 import sys
+import os
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 from services.service_layer import add_sensor_data_if_changed_via_api
@@ -20,9 +21,14 @@ TOPIC = "iot/adc_data"
 
 # === Certificate Paths (your actual files) ===
 
-CA_PATH   = r"C:\Users\student.CL02045\Desktop\FINAL_IOT_PROJECT\Aarma-be\certs\AmazonRootCA1.pem"
-CERT_PATH = r"C:\Users\student.CL02045\Desktop\FINAL_IOT_PROJECT\Aarma-be\certs\8805dbe759dbb5b938494f05b7c2712546d9ef678ba719f4cf40f330b4d290de-certificate.pem.crt"
-KEY_PATH  = r"C:\Users\student.CL02045\Desktop\FINAL_IOT_PROJECT\Aarma-be\certs\8805dbe759dbb5b938494f05b7c2712546d9ef678ba719f4cf40f330b4d290de-private.pem.key"
+
+
+# Automatically get the base project path (Aarma-be/)
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+CA_PATH   = os.path.join(BASE_DIR, "certs", "AmazonRootCA1.pem")
+CERT_PATH = os.path.join(BASE_DIR, "certs", "8805dbe759dbb5b938494f05b7c2712546d9ef678ba719f4cf40f330b4d290de-certificate.pem.crt")
+KEY_PATH  = os.path.join(BASE_DIR, "certs", "8805dbe759dbb5b938494f05b7c2712546d9ef678ba719f4cf40f330b4d290de-private.pem.key")
 
 # === MongoDB Setup ===
 mongo_client = MongoClient("mongodb://localhost:27017")
