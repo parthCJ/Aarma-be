@@ -31,7 +31,7 @@ CERT_PATH = os.path.join(BASE_DIR, "certs", "8805dbe759dbb5b938494f05b7c2712546d
 KEY_PATH  = os.path.join(BASE_DIR, "certs", "8805dbe759dbb5b938494f05b7c2712546d9ef678ba719f4cf40f330b4d290de-private.pem.key")
 
 # === MongoDB Setup ===
-mongo_client = MongoClient("mongodb://localhost:27017")
+mongo_client = MongoClient("mongodb+srv://mahanshgaur:Mahansh%40123@arma.soyopa5.mongodb.net/?retryWrites=true&w=majority&appName=ARMA")
 db = mongo_client["iot_project"]
 sensor_data_collection = db["sensor_data"]
 

@@ -8,8 +8,8 @@ load_dotenv(dotenv_path)
 
 def get_database():
     mongo_uri = os.getenv("MONGO_URI")
-    db_name = os.getenv("MONGO_DB")
-    
+    db_name = os.getenv("MONGO_DB", "iot_project")
+   
     if not mongo_uri or not db_name:
         raise ValueError("MONGO_URI or MONGO_DB not found in .env file")
 
