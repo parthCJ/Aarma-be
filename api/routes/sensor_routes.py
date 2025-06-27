@@ -8,7 +8,7 @@ from datetime import datetime, timezone
 from bson import ObjectId
 from pymongo import MongoClient
 
-client = MongoClient("mongodb://localhost:27017")
+client = MongoClient("mongodb+srv://mahanshgaur:Mahansh%40123@arma.soyopa5.mongodb.net/?retryWrites=true&w=majority&appName=ARMA")
 db = client["iot_project"]
 
 router = APIRouter()

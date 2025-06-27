@@ -1,11 +1,11 @@
 import requests
 from typing import Dict, Any
 
-API_URL = "http://localhost:8000/sensors/sensor-data"
-GET_LATEST_URL_TEMPLATE = "http://localhost:8000/sensors/{sensor_id}/last-data"
+API_URL = "mongodb+srv://mahanshgaur:Mahansh%40123@arma.soyopa5.mongodb.net/?retryWrites=true&w=majority&appName=ARMA"
+GET_LATEST_URL_TEMPLATE = "mongodb+srv://mahanshgaur:Mahansh%40123@arma.soyopa5.mongodb.net/?retryWrites=true&w=majority&appName=ARMA"
 
 # Check if difference is significant
-def is_significant_change(a: float, b: float, threshold: float = 5.0) -> bool:
+def is_significant_change(a: float, b: float, threshold: float = -5) -> bool:
     return abs(a - b) >= threshold
 
 # Main function to call from MQTT receiver
