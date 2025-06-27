@@ -3,6 +3,8 @@ from pydantic import BaseModel, EmailStr, Field  # type: ignore
 from typing import List, Optional
 from datetime import datetime, timezone
 from database.connection import get_database
+from fastapi import Query
+from fastapi.encoders import jsonable_encoder
 
 router = APIRouter()
 db = get_database()
@@ -129,3 +131,33 @@ def get_user_update_history(user_id: str):
     if not history:
         raise HTTPException(status_code=404, detail="No update history found for this user")
     return history
+
+@router.get("/filter", response_model=List[UserResponse])
+def filter_users(
+    user_id: Optional[str] = None,
+    email: Optional[str] = None,
+    number: Optional[str] = None,
+    location_id: Optional[str] = None,
+    created_from: Optional[str] = Query(None, description="Format: YYYY-MM-DDTHH:MM:SS"),
+    created_to: Optional[str] = Query(None, description="Format: YYYY-MM-DDTHH:MM:SS")
+):
+    query = {"is_deleted": {"$ne": True}}
+
+    if user_id:
+        query["user_id"] = user_id
+    if email:
+        query["email"] = email
+    if number:
+        query["number"] = number
+    if location_id:
+        query["location_ids"] = location_id  # Checks if location_id is in the array
+
+    if created_from or created_to:
+        query["created_at"] = {}
+        if created_from:
+            query["created_at"]["$gte"] = datetime.fromisoformat(created_from)
+        if created_to:
+            query["created_at"]["$lte"] = datetime.fromisoformat(created_to)
+
+    users = list(users_collection.find(query, {"_id": 0}))
+    return jsonable_encoder(users)

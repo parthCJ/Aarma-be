@@ -1,5 +1,7 @@
 # sensor_api.py
 from fastapi import APIRouter, HTTPException
+from fastapi import Query
+from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel, Field
 from typing import List, Optional, Dict, Any
 from datetime import datetime, timezone
@@ -47,7 +49,7 @@ class SensorUpdateHistory(BaseModel):
 
 # -------------------------- ROUTES --------------------------
 
-@router.post("/sensors", response_model=SensorResponse)
+@router.post("/", response_model=SensorResponse)
 def create_sensor(sensor: SensorCreate):
     if db.sensors.find_one({"_id": sensor.sensor_id}):
         raise HTTPException(status_code=400, detail="Sensor already exists")
@@ -61,7 +63,7 @@ def create_sensor(sensor: SensorCreate):
     return {"sensor_id": sensor.sensor_id, "devices": sensor.devices, "is_deleted": False}
 
 
-@router.get("/sensors/{sensor_id}", response_model=SensorResponse)
+@router.get("/{sensor_id}", response_model=SensorResponse)
 def get_sensor(sensor_id: str):
     sensor = db.sensors.find_one({"_id": sensor_id, "is_deleted": False})
     if not sensor:
@@ -73,7 +75,7 @@ def get_sensor(sensor_id: str):
     }
 
 
-@router.patch("/sensors/{sensor_id}", response_model=SensorResponse)
+@router.patch("/{sensor_id}", response_model=SensorResponse)
 def update_sensor(sensor_id: str, update: SensorUpdate):
     sensor = db.sensors.find_one({"_id": sensor_id})
     if not sensor or sensor.get("is_deleted"):
@@ -102,7 +104,7 @@ def update_sensor(sensor_id: str, update: SensorUpdate):
     }
 
 
-@router.delete("/sensors/{sensor_id}")
+@router.delete("/{sensor_id}")
 def soft_delete_sensor(sensor_id: str):
     result = db.sensors.update_one(
         {"_id": sensor_id, "is_deleted": {"$ne": True}},
@@ -115,9 +117,9 @@ def soft_delete_sensor(sensor_id: str):
 
 @router.post("/sensor-data")
 def add_sensor_data(data: SensorDataIn):
-    sensor = db.sensors.find_one({"_id": data.sensor_id})
-    if not sensor:
-        raise HTTPException(status_code=404, detail="Sensor not found")
+    # sensor = db.sensors.find_one({"_id": data.sensor_id})
+    # if not sensor:
+    #     raise HTTPException(status_code=404, detail="Sensor not found")
 
     document = {
         "sensor_id": data.sensor_id,
@@ -127,3 +129,61 @@ def add_sensor_data(data: SensorDataIn):
     }
     db.sensor_data.insert_one(document)
     return {"message": "Sensor data added."}
+
+@router.get("/{sensor_id}/last-data")
+def get_last_sensor_data(sensor_id: str):
+    """
+    Return the latest sensor_data document for the given sensor_id.
+    """
+    result = db.sensor_data.find_one(
+        {"sensor_id": sensor_id},
+        sort=[("created_at", -1)],
+        projection={"_id": 0}
+    )
+    if not result:
+        raise HTTPException(status_code=404, detail="No sensor data found")
+    return result
+
+
+
+@router.get("/sensor-data/filter")
+def filter_sensor_data(
+    sensor_id: Optional[str] = None,
+    device_id: Optional[str] = None,
+    sensor_name: Optional[str] = None,
+    start_date: Optional[str] = Query(None, description="Format: YYYY-MM-DDTHH:MM:SS"),
+    end_date: Optional[str] = Query(None, description="Format: YYYY-MM-DDTHH:MM:SS")
+):
+    query = {}
+
+    # Main filters
+    if sensor_id:
+        query["sensor_id"] = sensor_id
+    if device_id:
+        query["device_id"] = device_id
+    if start_date or end_date:
+        query["created_at"] = {}
+        if start_date:
+            query["created_at"]["$gte"] = datetime.fromisoformat(start_date)
+        if end_date:
+            query["created_at"]["$lte"] = datetime.fromisoformat(end_date)
+
+    # Query MongoDB
+    raw_data = db.sensor_data.find(query, {"_id": 0})
+
+    filtered_results = []
+
+    for doc in raw_data:
+        if sensor_name:
+            # Filter readings inside the document
+            filtered_readings = [
+                r for r in doc["readings"]
+                if r["sensor_name"].lower() == sensor_name.lower()
+            ]
+            if filtered_readings:
+                doc["readings"] = filtered_readings
+                filtered_results.append(doc)
+        else:
+            filtered_results.append(doc)
+
+    return {"count": len(filtered_results), "results": jsonable_encoder(filtered_results)}
