@@ -13,9 +13,9 @@ CLIENT_ID = "mqtt_sender"
 
 # === Certificate Paths ===
 
-CA_PATH   = r"C:\Users\student.CL02045\Desktop\FINAL_IOT_PROJECT\Aarma-be\certs\AmazonRootCA1.pem"
-CERT_PATH = r"C:\Users\student.CL02045\Desktop\FINAL_IOT_PROJECT\Aarma-be\certs\8805dbe759dbb5b938494f05b7c2712546d9ef678ba719f4cf40f330b4d290de-certificate.pem.crt"
-KEY_PATH  = r"C:\Users\student.CL02045\Desktop\FINAL_IOT_PROJECT\Aarma-be\certs\8805dbe759dbb5b938494f05b7c2712546d9ef678ba719f4cf40f330b4d290de-private.pem.key"
+CA_PATH   = "../certs/AmazonRootCA1.pem"
+CERT_PATH = "../certs/8805dbe759dbb5b938494f05b7c2712546d9ef678ba719f4cf40f330b4d290de-certificate.pem.crt"
+KEY_PATH  = "../certs/8805dbe759dbb5b938494f05b7c2712546d9ef678ba719f4cf40f330b4d290de-private.pem.key"
 
 # === Local API Endpoint (that saves to MongoDB) ===
 SERVICE_URL = "http://127.0.0.1:8000/sensors/sensor-data"
