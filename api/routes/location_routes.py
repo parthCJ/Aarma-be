@@ -1,4 +1,6 @@
 from fastapi import APIRouter, HTTPException, status
+from fastapi import Query
+from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel, Field
 from typing import Optional, List, Tuple
 from datetime import datetime, timezone
@@ -101,3 +103,39 @@ def delete_location(location_id: str):
     if result.modified_count == 0:
         raise HTTPException(status_code=404, detail="Location not found or already deleted")
     return
+
+
+
+
+
+@router.get("/filter", response_model=List[LocationResponse])
+def filter_locations(
+    user_id: Optional[str] = None,
+    city: Optional[str] = None,
+    state: Optional[str] = None,
+    country: Optional[str] = None,
+    name: Optional[str] = None,
+    created_from: Optional[str] = Query(None, description="Format: YYYY-MM-DDTHH:MM:SS"),
+    created_to: Optional[str] = Query(None, description="Format: YYYY-MM-DDTHH:MM:SS")
+):
+    query = {"is_deleted": {"$ne": True}}
+
+    if user_id:
+        query["user_id"] = user_id
+    if city:
+        query["address.city"] = {"$regex": city, "$options": "i"}
+    if state:
+        query["address.state"] = {"$regex": state, "$options": "i"}
+    if country:
+        query["address.country"] = {"$regex": country, "$options": "i"}
+    if name:
+        query["name"] = {"$regex": name, "$options": "i"}
+    if created_from or created_to:
+        query["created_at"] = {}
+        if created_from:
+            query["created_at"]["$gte"] = datetime.fromisoformat(created_from)
+        if created_to:
+            query["created_at"]["$lte"] = datetime.fromisoformat(created_to)
+
+    locations = locations_collection.find(query, {"_id": 0})
+    return jsonable_encoder(list(locations))
