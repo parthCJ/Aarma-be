@@ -4,6 +4,7 @@ from api.routes.location_routes import router as location_router
 from api.routes.device_routes import router as device_router
 from api.routes.sensor_routes import router as sensor_router
 
+app = FastAPI(root_path="/api")
 app = FastAPI(
     title="IoT Device Management API",
     description="APIs to manage users, locations, devices, sensors, and data",
