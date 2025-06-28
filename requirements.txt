@@ -1,0 +1,7 @@
+paho-mqtt
+fastapi
+uvicorn
+pymongo
+requests
+RPLCD
+adafruit-circuitpython-ads1x15
