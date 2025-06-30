@@ -40,10 +40,12 @@ def create_user(user: UserCreate):
     if existing:
         raise HTTPException(status_code=400, detail="User with this email or number already exists")
 
-    user_data = user.dict()
+    user_data = user.model_dump()
     user_data["created_at"] = datetime.now(timezone.utc)  # timezone-aware datetime
     user_data["is_deleted"] = False  # Soft delete flag by default
-    users_collection.insert_one(user_data)
+    result = users_collection.insert_one(user_data)
+    user_data["id"] = str(result.inserted_id)
+
     return user_data
 
 # -------------------------
@@ -66,15 +68,16 @@ def get_user_by_id(user_id: str):
         raise HTTPException(status_code=404, detail="User not found")
     return user
 
-@router.get("/")
-def get_user_by_query(user_id: str = None):
-    if not user_id:
-        raise HTTPException(status_code=400, detail="user_id is required")
+# @router.get("/")
+# def get_user_by_query(user_id: str = None):
+#     if not user_id:
+#         raise HTTPException(status_code=400, detail="user_id is required")
     
-    user = users_collection.find_one({"user_id": user_id, "is_deleted": {"$ne": True}}, {"_id": 0})
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    return user
+#     user = users_collection.find_one({"user_id": user_id, "is_deleted": {"$ne": True}}, {"_id": 0})
+#     if not user:
+#         raise HTTPException(status_code=404, detail="User not found")
+#     return user
+
 
 # -------------------------
 # Update user (with history)

@@ -36,7 +36,7 @@ def create_device(device: DeviceCreate):
     if db.devices.find_one({"_id": device.device_id}):
         raise HTTPException(status_code=400, detail="Device ID already exists")
 
-    doc = device.dict()
+    doc = device.model_dump()
     doc["_id"] = device.device_id
     doc["created_at"] = datetime.now(timezone.utc)
     doc["is_deleted"] = False

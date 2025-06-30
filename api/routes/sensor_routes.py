@@ -81,7 +81,7 @@ def update_sensor(sensor_id: str, update: SensorUpdate):
     if not sensor or sensor.get("is_deleted"):
         raise HTTPException(status_code=404, detail="Sensor not found")
 
-    update_data = {k: v for k, v in update.dict().items() if v is not None}
+    update_data = {k: v for k, v in update.model_dump().items() if v is not None}
     if not update_data:
         raise HTTPException(status_code=400, detail="No fields to update")
 
@@ -125,7 +125,7 @@ def add_sensor_data(data: SensorDataIn):
         "sensor_id": data.sensor_id,
         "device_id": data.device_id,
         "created_at": datetime.now(timezone.utc),
-        "readings": [reading.dict() for reading in data.readings]
+        "readings": [reading.model_dump() for reading in data.readings]
     }
     db.sensor_data.insert_one(document)
     return {"message": "Sensor data added."}

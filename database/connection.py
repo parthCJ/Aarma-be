@@ -2,8 +2,9 @@ import os
 from pymongo import MongoClient
 from dotenv import load_dotenv
 
+
 # Load .env from the current directory (same as this file)
-dotenv_path = os.path.join(os.path.dirname(__file__), ".env")
+dotenv_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), ".env")
 load_dotenv(dotenv_path)
 
 def get_database():
@@ -15,3 +16,4 @@ def get_database():
 
     client = MongoClient(mongo_uri)
     return client[db_name]
+

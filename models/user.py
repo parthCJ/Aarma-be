@@ -11,7 +11,7 @@ class User:
             location_ids (list[str]): List of location IDs owned by this user.
             created_at (datetime): The datetime when the user account was created.
         """
-        self.user_id = user_id
+        self._id = user_id
         self.name = name
         self.email = email
         self.number = number

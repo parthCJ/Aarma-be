@@ -49,7 +49,7 @@ def create_location(location: LocationCreate):
     if locations_collection.find_one({"location_id": location.location_id}):
         raise HTTPException(status_code=400, detail="Location already exists")
 
-    location_data = location.dict()
+    location_data = location.model_dump()
     location_data["created_at"] = datetime.now(timezone.utc)
     location_data["is_deleted"] = False
     locations_collection.insert_one(location_data)
@@ -72,7 +72,7 @@ def update_location(location_id: str, updates: LocationUpdate):
     if not location:
         raise HTTPException(status_code=404, detail="Location not found")
 
-    update_data = {k: v for k, v in updates.dict(exclude_unset=True).items() if v is not None}
+    update_data = {k: v for k, v in updates.model_dump(exclude_unset=True).items() if v is not None}
     if not update_data:
         raise HTTPException(status_code=400, detail="No fields provided for update")
 
