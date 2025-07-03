@@ -1,12 +1,14 @@
 import requests
 from typing import Dict, Any
 
-API_URL = "mongodb+srv://mahanshgaur:Mahansh%40123@arma.soyopa5.mongodb.net/?retryWrites=true&w=majority&appName=ARMA"
-GET_LATEST_URL_TEMPLATE = "mongodb+srv://mahanshgaur:Mahansh%40123@arma.soyopa5.mongodb.net/?retryWrites=true&w=majority&appName=ARMA"
+# ✅ Use your actual FastAPI endpoint, not Mongo URI
+API_URL = "http://localhost:8000/sensors/sensor-data"
+GET_LATEST_URL_TEMPLATE = "http://localhost:8000/sensors/{sensor_id}/last-data"
 
 # Check if difference is significant
-def is_significant_change(a: float, b: float, threshold: float = -5) -> bool:
-    return abs(a - b) >= threshold
+def is_significant_change(a: float, b: float, threshold: float = -2) -> bool:
+    # return abs(a - b) >= threshold
+    return True
 
 # Main function to call from MQTT receiver
 def add_sensor_data_if_changed_via_api(data: Dict[str, Any]) -> Dict[str, Any]:
@@ -14,11 +16,14 @@ def add_sensor_data_if_changed_via_api(data: Dict[str, Any]) -> Dict[str, Any]:
     if not sensor_id:
         return {"error": "sensor_id missing in payload"}
 
-    # Get latest data for this sensor
+    # Correctly build GET URL
     latest_url = GET_LATEST_URL_TEMPLATE.format(sensor_id=sensor_id)
-    r = requests.get(latest_url)
+    try:
+        r = requests.get(latest_url)
+    except Exception as e:
+        return {"error": "Failed to connect to API", "exception": str(e)}
 
-    # If no data exists yet, just send it
+    # If no previous data exists
     if r.status_code == 404:
         res = requests.post(API_URL, json=data)
         return {
@@ -33,7 +38,7 @@ def add_sensor_data_if_changed_via_api(data: Dict[str, Any]) -> Dict[str, Any]:
             "response": r.text
         }
 
-    # Compare current vs last readings
+    # Compare current vs latest data
     latest_data = r.json()
     old_readings = {
         reading["sensor_name"]: reading["reading"]
@@ -41,7 +46,7 @@ def add_sensor_data_if_changed_via_api(data: Dict[str, Any]) -> Dict[str, Any]:
     }
 
     new_readings = [
-        reading for reading in data["readings"]
+        reading for reading in data.get("readings", [])
         if reading["sensor_name"] not in old_readings
         or is_significant_change(reading["reading"], old_readings[reading["sensor_name"]])
     ]
