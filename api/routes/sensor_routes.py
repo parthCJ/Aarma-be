@@ -7,6 +7,14 @@ from typing import List, Optional, Dict, Any
 from datetime import datetime, timezone
 from bson import ObjectId
 from pymongo import MongoClient
+from fastapi.responses import StreamingResponse
+import csv
+import io
+
+
+
+
+
 
 client = MongoClient("mongodb+srv://mahanshgaur:Mahansh%40123@arma.soyopa5.mongodb.net/?retryWrites=true&w=majority&appName=ARMA")
 db = client["iot_project"]
@@ -88,7 +96,7 @@ def update_sensor(sensor_id: str, update: SensorUpdate):
     db.sensors.update_one({"_id": sensor_id}, {"$set": update_data})
 
     history_doc = {
-        "_id": f"SENS_HIST_{ObjectId()}",
+        "id": f"SENS_HIST{ObjectId()}",
         "sensor_id": sensor_id,
         "timestamp": datetime.now(timezone.utc),
         "old_data": {k: sensor.get(k) for k in update_data},
@@ -117,9 +125,9 @@ def soft_delete_sensor(sensor_id: str):
 
 @router.post("/sensor-data")
 def add_sensor_data(data: SensorDataIn):
-    # sensor = db.sensors.find_one({"_id": data.sensor_id})
-    # if not sensor:
-    #     raise HTTPException(status_code=404, detail="Sensor not found")
+    sensor = db.sensors.find_one({"_id": data.sensor_id})
+    if not sensor:
+        raise HTTPException(status_code=404, detail="Sensor not found")
 
     document = {
         "sensor_id": data.sensor_id,
@@ -187,3 +195,55 @@ def filter_sensor_data(
             filtered_results.append(doc)
 
     return {"count": len(filtered_results), "results": jsonable_encoder(filtered_results)}
+
+
+
+
+# ----------------------------- #
+# Export ALL sensor data to CSV
+# ----------------------------- #
+@router.get("/data/export/csv")
+def export_all_sensor_data_csv():
+    cursor = db.sensor_data.find({}, {"_id": 0})
+    return generate_csv_response(cursor, filename="all_sensor_data.csv")
+
+
+# ------------------------------------------ #
+# Export data for a specific sensor_id to CSV
+# ------------------------------------------ #
+@router.get("/data/export/csv/{sensor_id}")
+def export_sensor_data_by_id_csv(sensor_id: str):
+    cursor = db.sensor_data.find({"sensor_id": sensor_id}, {"_id": 0})
+    return generate_csv_response(cursor, filename=f"{sensor_id}_data.csv")
+
+
+# ---------------------- #
+# Shared CSV generator
+# ---------------------- #
+def generate_csv_response(cursor, filename="data.csv"):
+    data = list(cursor)
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+
+    # Header row
+    header = ["sensor_id", "device_id", "created_at", "sensor_name", "status", "reading", "unit", "note", "sensor_health", "sensor_specification"]
+    writer.writerow(header)
+
+    for doc in data:
+        for reading in doc.get("readings", []):
+            writer.writerow([
+                doc.get("sensor_id", ""),
+                doc.get("device_id", ""),
+                doc.get("created_at", ""),
+                reading.get("sensor_name", ""),
+                reading.get("status", ""),
+                reading.get("reading", ""),
+                reading.get("unit", ""),
+                reading.get("note", ""),
+                reading.get("sensor_health", ""),
+                reading.get("sensor_specification", "")
+            ])
+
+    output.seek(0)
+    return StreamingResponse(output, media_type="text/csv", headers={"Content-Disposition": f"attachment; filename={filename}"})
