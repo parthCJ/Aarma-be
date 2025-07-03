@@ -3,10 +3,8 @@ import json
 import ssl
 import os
 import paho.mqtt.client as mqtt
-import random
-import time
 from pymongo import MongoClient
-from datetime import datetime
+from datetime import datetime, timezone
 from copy import deepcopy
 import sys
 import os
@@ -15,17 +13,12 @@ sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 from services.service_layer import add_sensor_data_if_changed_via_api
 
 # === MQTT CONFIG ===
-ENDPOINT = "d002332310q6wvd4iri8x-ats.iot.ap-south-1.amazonaws.com" # <-- Replace with your real AWS IoT endpoint
+ENDPOINT = "d002332310q6wvd4iri8x-ats.iot.ap-south-1.amazonaws.com"  # <-- Replace with your real AWS IoT endpoint
 PORT = 8883
-TOPIC = "iot/adc_data" 
+TOPIC = "mything-io"
 
-# === Certificate Paths (your actual files) ===
-
-
-
-# Automatically get the base project path (Aarma-be/)
+# === Certificate Paths ===
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
 CA_PATH   = os.path.join(BASE_DIR, "certs", "AmazonRootCA1.pem")
 CERT_PATH = os.path.join(BASE_DIR, "certs", "8805dbe759dbb5b938494f05b7c2712546d9ef678ba719f4cf40f330b4d290de-certificate.pem.crt")
 KEY_PATH  = os.path.join(BASE_DIR, "certs", "8805dbe759dbb5b938494f05b7c2712546d9ef678ba719f4cf40f330b4d290de-private.pem.key")
@@ -50,7 +43,14 @@ def on_message(client, userdata, msg):
 
         # Save raw reading for backup purposes
         mongo_payload = deepcopy(payload)
-        mongo_payload["received_at"] = datetime.utcnow()
+
+        # Ensure required fields for MongoDB uniqueness
+        mongo_payload.setdefault("sensor_id", "sensor_01")  # You can replace with dynamic logic
+    
+
+        mongo_payload.setdefault("created_at", datetime.now(timezone.utc))
+        mongo_payload["received_at"] = datetime.now(timezone.utc)
+
         sensor_data_collection.insert_one(mongo_payload)
         print("[MongoDB] Raw data inserted")
 
