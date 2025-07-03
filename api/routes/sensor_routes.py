@@ -199,51 +199,101 @@ def filter_sensor_data(
 
 
 
+# # ----------------------------- #
+# # Export ALL sensor data to CSV
+# # ----------------------------- #
+# @router.get("/data/export/csv")
+# def export_all_sensor_data_csv():
+#     cursor = db.sensor_data.find({}, {"_id": 0})
+#     return generate_csv_response(cursor, filename="all_sensor_data.csv")
+
+
+# # ------------------------------------------ #
+# # Export data for a specific sensor_id to CSV
+# # ------------------------------------------ #
+# @router.get("/data/export/csv/{sensor_id}")
+# def export_sensor_data_by_id_csv(sensor_id: str):
+#     cursor = db.sensor_data.find({"sensor_id": sensor_id}, {"_id": 0})
+#     return generate_csv_response(cursor, filename=f"{sensor_id}_data.csv")
+
+
+# # ---------------------- #
+# # Shared CSV generator
+# # ---------------------- #
+# def generate_csv_response(cursor, filename="data.csv"):
+#     data = list(cursor)
+#     # print(data)
+#     output = io.StringIO()
+#     writer = csv.writer(output)
+
+#     # Header row
+#     header = ["sensor_id", "device_id", "created_at", "sensor_name", "status", "reading", "unit", "note", "sensor_health", "sensor_specification"]
+#     writer.writerow(header)
+
+#     for doc in data:
+#         # print(doc)
+#         for reading in doc.get("readings", []):
+#             # print(reading)
+#             writer.writerow([
+#                 doc.get("sensor_id", ""),
+#                 doc.get("device_id", ""),
+#                 doc.get("created_at", ""),
+#                 reading.get("sensor_name", ""),
+#                 reading.get("status", ""),
+#                 reading.get("reading", ""),
+#                 reading.get("unit", ""),
+#                 reading.get("note", ""),
+#                 reading.get("sensor_health", ""),
+#                 reading.get("sensor_specification", "")
+#             ])
+
+#     output.seek(0)
+#     return StreamingResponse(output, media_type="text/csv", headers={"Content-Disposition": f"attachment; filename={filename}"})
+
+from fastapi.responses import StreamingResponse
+import io
+import csv
+
 # ----------------------------- #
-# Export ALL sensor data to CSV
+# Export ALL flat sensor data
 # ----------------------------- #
-@router.get("/data/export/csv")
-def export_all_sensor_data_csv():
+@router.get("/data/export/flat-csv")
+def export_all_flat_sensor_data_csv():
     cursor = db.sensor_data.find({}, {"_id": 0})
-    return generate_csv_response(cursor, filename="all_sensor_data.csv")
+    return generate_flat_csv_response(cursor, "flat_sensor_data.csv")
 
 
-# ------------------------------------------ #
-# Export data for a specific sensor_id to CSV
-# ------------------------------------------ #
-@router.get("/data/export/csv/{sensor_id}")
-def export_sensor_data_by_id_csv(sensor_id: str):
+# -------------------------------------------- #
+# Export flat sensor data for specific sensor
+# -------------------------------------------- #
+@router.get("/data/export/flat-csv/{sensor_id}")
+def export_flat_sensor_data_by_id_csv(sensor_id: str):
     cursor = db.sensor_data.find({"sensor_id": sensor_id}, {"_id": 0})
-    return generate_csv_response(cursor, filename=f"{sensor_id}_data.csv")
+    return generate_flat_csv_response(cursor, f"{sensor_id}_flat_data.csv")
 
 
-# ---------------------- #
-# Shared CSV generator
-# ---------------------- #
-def generate_csv_response(cursor, filename="data.csv"):
+# ----------------------------- #
+# Flat CSV Generator
+# ----------------------------- #
+def generate_flat_csv_response(cursor, filename: str):
     data = list(cursor)
+    if not data:
+        raise HTTPException(status_code=404, detail="No data found")
 
     output = io.StringIO()
     writer = csv.writer(output)
 
-    # Header row
-    header = ["sensor_id", "device_id", "created_at", "sensor_name", "status", "reading", "unit", "note", "sensor_health", "sensor_specification"]
+    # Use keys from first doc as headers
+    header = list(data[0].keys())
     writer.writerow(header)
 
     for doc in data:
-        for reading in doc.get("readings", []):
-            writer.writerow([
-                doc.get("sensor_id", ""),
-                doc.get("device_id", ""),
-                doc.get("created_at", ""),
-                reading.get("sensor_name", ""),
-                reading.get("status", ""),
-                reading.get("reading", ""),
-                reading.get("unit", ""),
-                reading.get("note", ""),
-                reading.get("sensor_health", ""),
-                reading.get("sensor_specification", "")
-            ])
+        row = [doc.get(col, "") for col in header]
+        writer.writerow(row)
 
     output.seek(0)
-    return StreamingResponse(output, media_type="text/csv", headers={"Content-Disposition": f"attachment; filename={filename}"})
+    return StreamingResponse(
+        output,
+        media_type="text/csv",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
