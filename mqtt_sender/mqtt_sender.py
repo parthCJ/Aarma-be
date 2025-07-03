@@ -18,7 +18,7 @@ CERT_PATH = "../certs/8805dbe759dbb5b938494f05b7c2712546d9ef678ba719f4cf40f330b4
 KEY_PATH  = "../certs/8805dbe759dbb5b938494f05b7c2712546d9ef678ba719f4cf40f330b4d290de-private.pem.key"
 
 # === Local API Endpoint (that saves to MongoDB) ===
-SERVICE_URL = "http://127.0.0.1:8000/sensors/sensor-data"
+SERVICE_URL = "http://127.0.0.1:5000/sensors/sensor-data"
 
 # === IDs for device/sensor ===
 DEVICE_ID = "DEV001"

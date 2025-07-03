@@ -37,10 +37,10 @@ def wait_for_api(url, timeout=15):
     return False
 
 # Start FastAPI server
-api_process = subprocess.Popen(["uvicorn", "api.main:app", "--reload"])
+api_process = subprocess.Popen(["uvicorn", "api.main:app", "--reload", "--host", "0.0.0.0", "--port", "5000"])
 
 # Wait until server is reachable
-if wait_for_api("http://localhost:8000/docs"):
+if wait_for_api("http://localhost:5000/docs"):
     print("[✓] FastAPI is up. Starting MQTT receiver...")
     mqtt_process = subprocess.Popen(["python", "mqtt_receiver/mqtt_receiver.py"])
 else:

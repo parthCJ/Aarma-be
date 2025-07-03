@@ -2,8 +2,8 @@ import requests
 from typing import Dict, Any
 
 # ✅ Use your actual FastAPI endpoint, not Mongo URI
-API_URL = "http://localhost:8000/sensors/sensor-data"
-GET_LATEST_URL_TEMPLATE = "http://localhost:8000/sensors/{sensor_id}/last-data"
+API_URL = "http://localhost:5000/sensors/sensor-data"
+GET_LATEST_URL_TEMPLATE = "http://localhost:5000/sensors/{sensor_id}/last-data"
 
 # Check if difference is significant
 def is_significant_change(a: float, b: float, threshold: float = -2) -> bool:
