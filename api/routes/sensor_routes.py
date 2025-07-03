@@ -11,6 +11,11 @@ from fastapi.responses import StreamingResponse
 import csv
 import io
 
+
+
+
+
+
 client = MongoClient("mongodb+srv://mahanshgaur:Mahansh%40123@arma.soyopa5.mongodb.net/?retryWrites=true&w=majority&appName=ARMA")
 db = client["iot_project"]
 
